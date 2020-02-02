@@ -14,3 +14,6 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/order/create','OrderController@create')->name('neworder');
+Route::post('/order','OrderController@store');
