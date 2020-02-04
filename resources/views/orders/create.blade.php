@@ -44,12 +44,11 @@
                             </span>
                         @enderror                        
                     </div>
-    
-                    <div class="row pt-4">
-                        <button class="btn btn-primary">Realizar pago</button>
-                    </div>
+                    <div class="col-md-12 text-center py-4"> 
+                        <button class="btn btn-primary btn-block">Realizar pago</button>
+                    </div>                                    
                 </div>
-            </div>
+            </div>            
         </form>
     </div>
 @endsection

@@ -60,8 +60,10 @@
 
 <div class="flex-center position-ref full-height">
     <div class="content">
-        <div class="title m-b-md">
-            urOnlineShop
+        <div class="title m-b-md d-flex">
+            <div class="div"><img src="/svg/carrito-de-compras.svg" alt="" style="height:80px; border-right:1px solid;" class="pr-3"></div>
+            {{-- Iconos diseñados por <a href="https://www.flaticon.es/autores/wanicon" title="wanicon">wanicon</a> from <a href="https://www.flaticon.es/" title="Flaticon"> www.flaticon.es</a> --}}
+            <span class="text-dark align-text-bottom pl-3">urOnlineShop</span>
         </div>
         <div class="m-b-md">
             <h2>En construcción</h2>
