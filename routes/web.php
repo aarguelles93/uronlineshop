@@ -20,5 +20,5 @@ Route::get('/order/processPayment/{order}','OrderController@requestInfo');
 
 Route::get('/order/create','OrderController@create')->name('neworder');
 Route::post('/order','OrderController@store');
-Route::get('/order/{order}', 'OrderController@show');
+Route::get('/order/{order}', 'OrderController@show')->name('showorder');
 

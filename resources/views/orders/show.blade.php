@@ -20,7 +20,7 @@
                     </li>
                     <li class="list-group-item">
                         <strong>Estado:</strong>
-                        <p>{{ $order->status == 'APROVED' ? 'Aprovada' : 'Rechazada' }}</p>
+                        <p>{{ $order->status == 'PAYED' ? 'Aprobada' : 'Rechazada' }}</p>
                     </li>                                                          
                 </ul>
                 @if ($order->status == 'REJECTED')

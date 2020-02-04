@@ -7,7 +7,7 @@
             @csrf
             <div class="row">
                 <div class="col-8 offset-2">
-                    <div class="row"><h1>Registrar orden</h1></div>
+                    <div class="row"><h1>Nueva orden de compra</h1></div>
     
                     <div class="form-group row">
                         <label for="name" class="col-md-4 col-form-label">Nombre:</label>
@@ -45,7 +45,7 @@
                         @enderror                        
                     </div>
                     <div class="col-md-12 text-center py-4"> 
-                        <button class="btn btn-primary btn-block">Realizar pago</button>
+                        <button class="btn btn-primary btn-block">Registrar orden</button>
                     </div>                                    
                 </div>
             </div>            
