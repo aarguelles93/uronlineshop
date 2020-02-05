@@ -138,9 +138,10 @@ class OrderController extends Controller
                     // $response->status()->message();
                     return view('error', compact('response'));
                 }
-                var_dump($response);
+                
             } catch (Exception $e) {
-                var_dump($e->getMessage());
+                $response = $e->getMessage();
+                return view('error', compact('response'));
             }
 
         }
@@ -174,7 +175,8 @@ class OrderController extends Controller
             return redirect()->route('showorder',compact('order')); 
         } else {
             // There was some error with the connection so check the message
-            print_r($response->status()->message() . "\n");
+            //print_r($response->status()->message() . "\n");
+            return view('error', compact('response'));
         }
         
     }
