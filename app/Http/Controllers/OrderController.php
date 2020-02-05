@@ -3,44 +3,56 @@
 namespace App\Http\Controllers;
 
 use App\Order;
+use App\Article;
 use Illuminate\Http\Request;
 use Dnetix\Redirection\PlacetoPay;
 
 class OrderController extends Controller
 {
-    public function create()
-    {
-        return view('orders.create');
+    public function index(){
+        $orders = Order::orderBy('created_at','DESC')->get();
+
+        return view('orders.index', compact('orders'));
+    }
+    
+    public function create(Request $request)
+    {        
+        $articleid= $request->input('article');
+        $article = Article::findOrFail($articleid);
+
+        return view('orders.create',compact('article'));
     }
     
     public function store(Request $request)
     {
+        
         $request = $request->validate([
             'name' => ['required','max:80'],
             'email' => ['required','email','max:120'],
             'mobile' => ['required','regex:/^[0-9\-\(\)\/\+\s]*$/','max:40'],
+            'article_id' => ['required','exists:App\Article,id']
         ]);
 
         $order = new Order([
             'customer_name' => $request['name'],
             'customer_email' => $request['email'],
             'customer_mobile' => $request['mobile'],
+            'article_id' => $request['article_id'],
             'status' => 'CREATED'
         ]);
-
-        $order->save();
-                
+        //$order->save();
+        $order->push();
+        
         return redirect('/order/'.$order->id);
     }  
 
     public function show(Order $order)
-    {        
-        if ($order->status == 'CREATED'){
+    {   
+        if ($order->status == 'CREATED'){            
             return view('orders.preview', compact('order'));                   
         }else{
             return view('orders.show', compact('order'));
-        }
-        
+        }        
     }
 
     /**
@@ -64,10 +76,10 @@ class OrderController extends Controller
             ],
             "payment" => [
                 "reference" => $reference,
-                "description" => "Iusto sit et voluptatem.",
+                "description" => $order->article->description,
                 "amount" => [
                     "currency" => "COP",
-                    "total" => 183000
+                    "total" => $order->article->cost
                 ],                            
                 "allowPartial" => false
             ],

@@ -11,9 +11,7 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/','ArticleController@index')->name('home');
 
 Route::post('/order/processPayment/{order}','OrderController@processPayment');
 Route::get('/order/processPayment/{order}','OrderController@requestInfo');
@@ -21,4 +19,7 @@ Route::get('/order/processPayment/{order}','OrderController@requestInfo');
 Route::get('/order/create','OrderController@create')->name('neworder');
 Route::post('/order','OrderController@store');
 Route::get('/order/{order}', 'OrderController@show')->name('showorder');
+Route::get('/order','OrderController@index');
+
+Route::get('/article','ArticleController@index');
 

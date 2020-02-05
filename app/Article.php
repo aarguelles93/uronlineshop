@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Article extends Model
 {
-    public function order(){
-        return $this->belongsTo(Order::class);
+    protected $fillable = [
+        'description', 'cost', 
+    ];
+
+    public function orders(){
+        return $this->hasMany(Order::class)->orderBy('created_at','DESC');
     }
 }

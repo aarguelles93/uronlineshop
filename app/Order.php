@@ -12,4 +12,8 @@ class Order extends Model
     {
         return $this->hasMany(Request::class)->orderBy('created_at','DESC');
     }
+
+    public function article(){
+        return $this->belongsTo(Article::class);
+    }
 }
