@@ -3,48 +3,96 @@
 namespace App\Http\Controllers;
 
 use App\Order;
+use App\Article;
 use Illuminate\Http\Request;
 use Dnetix\Redirection\PlacetoPay;
 
 class OrderController extends Controller
 {
-    public function create()
-    {
-        return view('orders.create');
+    public function index(){
+        $orders = Order::orderBy('created_at','DESC')->get();
+
+        return view('orders.index', compact('orders'));
+    }
+    
+    public function create(Request $request)
+    {        
+        $articleid= $request->input('article');
+        $article = Article::findOrFail($articleid);
+
+        return view('orders.create',compact('article'));
     }
     
     public function store(Request $request)
     {
+        
         $request = $request->validate([
             'name' => ['required','max:80'],
             'email' => ['required','email','max:120'],
             'mobile' => ['required','regex:/^[0-9\-\(\)\/\+\s]*$/','max:40'],
+            'article_id' => ['required','exists:App\Article,id']
         ]);
 
         $order = new Order([
             'customer_name' => $request['name'],
             'customer_email' => $request['email'],
             'customer_mobile' => $request['mobile'],
+            'article_id' => $request['article_id'],
             'status' => 'CREATED'
         ]);
-
-        $order->save();
-                
+        //$order->save();
+        $order->push();
+        
         return redirect('/order/'.$order->id);
     }  
 
     public function show(Order $order)
-    {        
+    {   
         if ($order->status == 'CREATED'){            
-            if ($order->requests->isEmpty()) {
-                return view('orders.preview', compact('order'));
-            } else{
-                echo('hay requests pendientes');
-            }            
+            return view('orders.preview', compact('order'));                   
         }else{
             return view('orders.show', compact('order'));
-        }
+        }        
+    }
+
+    /**
+     * Generates the request for the PlacetoPay request method
+     * @param Order $order 
+     * @param int $validity
+     * Number of hours that the request link to PlacetoPay will be valid
+     * @return Request
+     * Input for the PlacetoPay->request() method
+     */
+    private function makeRequest(Order $order, int $validity){
+        $reference = 'TEST_' . time();
+        $expirationtime = date('c', strtotime("+$validity hour"));
         
+        $req = [
+            "locale" => "es_CO",            
+            "buyer" => [
+                "name" => $order->customer_name,                
+                "email" => $order->customer_email,                
+                "mobile" => $order->customer_mobile,                
+            ],
+            "payment" => [
+                "reference" => $reference,
+                "description" => $order->article->description,
+                "amount" => [
+                    "currency" => "COP",
+                    "total" => $order->article->cost
+                ],                            
+                "allowPartial" => false
+            ],
+            "expiration" => $expirationtime,
+            "ipAddress" => request()->getHost(),
+            "returnUrl" => request()->url(),
+            "skipResult" => false,
+            "noBuyerFill" => false,
+            "captureAddress" => false,
+            "paymentMethod" => null
+        ];
+        
+        return $req;
     }
 
     public function processPayment(Order $order)
@@ -66,37 +114,10 @@ class OrderController extends Controller
                 'url' => 'https://dev.placetopay.com/redirection/',
             ]);
             
-            $reference = 'TEST_' . time();
-            $expirationtime = date('c', strtotime('+1 hour'));
+            $req = $this->makeRequest($order,1);
             
-            $request = [
-                "locale" => "es_CO",            
-                "buyer" => [
-                    "name" => $order->customer_name,                
-                    "email" => $order->customer_email,                
-                    "mobile" => $order->customer_mobile,                
-                ],
-                "payment" => [
-                    "reference" => $reference,
-                    "description" => "Iusto sit et voluptatem.",
-                    "amount" => [
-                        "currency" => "COP",
-                        "total" => 183000
-                    ],                            
-                    "allowPartial" => false
-                ],
-                "expiration" => $expirationtime,
-                "ipAddress" => request()->getHost(),
-                "returnUrl" => 'http://127.0.0.1:8000/order/processPayment/'.$order->id,
-                "skipResult" => false,
-                "noBuyerFill" => false,
-                "captureAddress" => false,
-                "paymentMethod" => null
-            ];
-            
-            // validar si no tiene requests pendientes
             try {            
-                $response = $placetopay->request($request);
+                $response = $placetopay->request($req);
             
                 if ($response->isSuccessful()) {
                     // Redirect the client to the processUrl or display it on the JS extension                
@@ -107,7 +128,7 @@ class OrderController extends Controller
                         'request_id' => $response->requestId(),                    
                         'process_url' => $response->processUrl(),
                         'status' => $response->status()->status(),
-                        'expiration' => $request['expiration']
+                        'expiration' => $req['expiration']
                     ];
                     $order->requests()->create($data);
 
@@ -117,9 +138,10 @@ class OrderController extends Controller
                     // $response->status()->message();
                     return view('error', compact('response'));
                 }
-                var_dump($response);
+                
             } catch (Exception $e) {
-                var_dump($e->getMessage());
+                $response = $e->getMessage();
+                return view('error', compact('response'));
             }
 
         }
@@ -149,10 +171,12 @@ class OrderController extends Controller
                 $order->status = 'REJECTED';
                 $order->save();                
             }
-            return view('orders.show', compact('order'));
+            
+            return redirect()->route('showorder',compact('order')); 
         } else {
             // There was some error with the connection so check the message
-            print_r($response->status()->message() . "\n");
+            //print_r($response->status()->message() . "\n");
+            return view('error', compact('response'));
         }
         
     }
